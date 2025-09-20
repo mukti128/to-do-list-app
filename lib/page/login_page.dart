@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_list/controller/auth_service.dart';
+import 'package:to_do_list/page/home_page.dart';
+import 'package:to_do_list/page/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -33,6 +35,10 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Login berhasil")));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
     } else {
       ScaffoldMessenger.of(
         context,
@@ -53,21 +59,32 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: "Email"),
-                validator: (value) => value!.isEmpty ? "Email harus diisi" : null,
+                validator: (value) =>
+                    value!.isEmpty ? "Email harus diisi" : null,
               ),
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: "Password"),
                 obscureText: true,
-                validator: (value) => value!.isEmpty ? "Password harus diisi" : null,
+                validator: (value) =>
+                    value!.isEmpty ? "Password harus diisi" : null,
               ),
               const SizedBox(height: 20),
               _isLoading
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text("Login"),
-                  ),
+                      onPressed: _login,
+                      child: const Text("Login"),
+                    ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterPage()),
+                  );
+                },
+                child: const Text("Belum punya akun? Daftar"),
+              ),
             ],
           ),
         ),
