@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:to_do_list/firebase_options.dart';
-import 'package:to_do_list/page/register_page.dart';
+import 'package:to_do_list/pages/register_page.dart';
 import 'package:to_do_list/theme.dart';
 
 void main() async {

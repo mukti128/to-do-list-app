@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:to_do_list/page/content/kalender_page.dart';
-import 'package:to_do_list/page/content/profile_page.dart';
-import 'package:to_do_list/page/content/tasks_page.dart';
+import 'package:to_do_list/pages/contents/kalender_page.dart';
+import 'package:to_do_list/pages/contents/profile_page.dart';
+import 'package:to_do_list/pages/contents/tasks_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
