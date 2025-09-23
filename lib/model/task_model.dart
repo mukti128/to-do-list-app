@@ -4,9 +4,10 @@ class TaskModel {
   final String id;
   final String title;
   final DateTime createdAt;
-  final DateTime dueDate;
-  final DateTime reminderTime;
+  final DateTime? dueDate;
+  final DateTime? reminderTime;
   final String? categoryId;
+  final bool isPinned;
   final bool isDone;
   final bool isDeleted;
   final String idUser;
@@ -15,23 +16,30 @@ class TaskModel {
     required this.id,
     required this.title,
     required this.createdAt,
-    required this.dueDate,
-    required this.reminderTime,
+    this.dueDate,
+    this.reminderTime,
     this.categoryId,
+    required this.isPinned,
     required this.isDone,
     this.isDeleted = false,
     required this.idUser,
   });
 
-  factory TaskModel.fromFireStore(DocumentSnapshot doc){
+  factory TaskModel.fromFireStore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
     return TaskModel(
       id: doc.id,
       title: data['title'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
-      dueDate: (data['dueDate'] as Timestamp).toDate(),
-      reminderTime: (data['reminderTime'] as Timestamp).toDate(),
+      dueDate: data['dueDate'] != null
+          ? (data['dueDate'] as Timestamp).toDate()
+          : null,
+      reminderTime: data['reminderTime'] != null
+          ? (data['reminderTime'] as Timestamp).toDate()
+          : null,
       categoryId: data['categoryId'],
+      isPinned: data['isPinned'] ?? false,
       isDone: data['isDone'] ?? false,
       isDeleted: data['isDeleted'] ?? false,
       idUser: data['idUser'],
@@ -44,7 +52,8 @@ class TaskModel {
       'createdAt': createdAt,
       'dueDate': dueDate,
       'reminderTime': reminderTime,
-      if (categoryId != null) 'categoryId': categoryId,
+      'categoryId': categoryId,
+      'isPinned': isPinned,
       'isDone': isDone,
       'isDeleted': isDeleted,
       'idUser': idUser,

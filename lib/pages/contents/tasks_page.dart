@@ -14,6 +14,14 @@ class _TasksPageState extends State<TasksPage> {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   String? selectedCategoryId;
 
+  String _getMonthName(int month) {
+    const bulan = [
+      "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+      "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+    ];
+    return bulan[month - 1];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,20 +132,58 @@ class _TasksPageState extends State<TasksPage> {
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
                     final task = tasks[index];
-                    return ListTile(
-                      leading: const Icon(Icons.check_circle_outline),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (task['categoryId'] != null)
-                            Text("Kategori: ${task['categoryId']}"),
-                          Text(
-                            "Dibuat: ${(task['createdAt'] as Timestamp).toDate()}",
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
+                    final createdAt = task['createdAt'] as Timestamp?;
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
                       ),
-                      onTap: () {},
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 1.5,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        leading: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(6),
+                          child: const Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          task['title'] ?? "Tanpa Judul",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: createdAt != null
+                            ? Text(
+                                "${createdAt.toDate().day} "
+                                "${_getMonthName(createdAt.toDate().month)} "
+                                "${createdAt.toDate().year}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              )
+                            : null,
+                        trailing: IconButton(
+                          icon: const Icon(Icons.more_vert, size: 20),
+                          onPressed: () {},
+                        ),
+                        onTap: () {},
+                      ),
                     );
                   },
                 );
