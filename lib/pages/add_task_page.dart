@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:to_do_list/model/task_model.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -17,31 +18,43 @@ class _AddTaskPageState extends State<AddTaskPage> {
   DateTime? dueDate;
   TimeOfDay? reminderTime;
 
+  bool _isSaving = false;
+
   Future<void> _saveTask() async {
+    if (_isSaving) return;
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSaving = true);
+
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final now = DateTime.now();
+
+    DateTime? reminderDateTime;
+    if (reminderTime != null) {
+      reminderDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        reminderTime!.hour,
+        reminderTime!.minute,
+      );
+    }
+
+    final task = TaskModel(
+      id: "",
+      title: _titleController.text,
+      createdAt: now,
+      dueDate: dueDate,
+      reminderTime: reminderDateTime,
+      categoryId: selectedCategoryId,
+      isPinned: false,
+      isDone: false,
+      isDeleted: false,
+      idUser: currentUserId,
+    );
 
     try {
-      await FirebaseFirestore.instance.collection('tasks').add({
-        'title': _titleController.text,
-        'categoryId': selectedCategoryId,
-        'createdAt': FieldValue.serverTimestamp(),
-        'dueDate': dueDate != null ? Timestamp.fromDate(dueDate!) : null,
-        'reminder': reminderTime != null
-            ? Timestamp.fromDate(
-                DateTime(
-                  DateTime.now().year,
-                  DateTime.now().month,
-                  DateTime.now().day,
-                  reminderTime!.hour,
-                  reminderTime!.minute,
-                ),
-              )
-            : null,
-        'isDeleted': false,
-        'idUser': currentUserId,
-      });
+      await FirebaseFirestore.instance.collection('tasks').add(task.toMap());
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -106,6 +119,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   stream: FirebaseFirestore.instance
                       .collection('categories')
                       .where('isDeleted', isEqualTo: false)
+                      .where(
+                        'idUser',
+                        isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+                      )
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -113,19 +130,19 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     }
 
                     final categories = snapshot.data?.docs ?? [];
-                    return DropdownButtonFormField<String>(
+                    return DropdownButtonFormField<String?>(
                       initialValue: selectedCategoryId,
                       decoration: const InputDecoration(
                         labelText: "Kategori (Opsional)",
                         border: OutlineInputBorder(),
                       ),
                       items: [
-                        const DropdownMenuItem<String>(
+                        const DropdownMenuItem<String?>(
                           value: null,
                           child: Text("Tanpa kategori"),
                         ),
                         ...categories.map((cat) {
-                          return DropdownMenuItem(
+                          return DropdownMenuItem<String?>(
                             value: cat.id,
                             child: Text(cat['name']),
                           );
@@ -176,9 +193,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _saveTask,
+                    onPressed: _isSaving ? null : _saveTask,
                     icon: const Icon(Icons.save),
-                    label: const Text("Simpan Task"),
+                    label: _isSaving
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text("Simpan Task"),
                   ),
                 ),
               ],
