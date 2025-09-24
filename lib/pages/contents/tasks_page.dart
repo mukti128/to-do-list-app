@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:to_do_list/pages/add_task_page.dart';
+import 'package:to_do_list/pages/categoies_page.dart';
 
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
@@ -35,9 +36,15 @@ class _TasksPageState extends State<TasksPage> {
             },
             itemBuilder: (context) => [
               const PopupMenuItem(value: "search", child: Text("Search")),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: "manage_category",
-                child: Text("Manajemen Kategori"),
+                child: const Text("Manajemen Kategori"),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CategoriesPage()),
+                  );
+                },
               ),
             ],
           ),
@@ -161,7 +168,7 @@ class _TasksPageState extends State<TasksPage> {
                           ),
                         ),
                         title: Text(
-                          task['title'] ?? "Tanpa Judul",
+                          task['title'],
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
