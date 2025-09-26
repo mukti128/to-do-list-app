@@ -41,8 +41,12 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         return "User tidak ditemukan";
-      } else if (e.code == 'wrong-password') {
+      }
+      if (e.code == 'wrong-password') {
         return "Password salah";
+      }
+      if (e.code == 'invalid-email') {
+        return "Format email tidak valid";
       }
       return e.message;
     } catch (e) {
