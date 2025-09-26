@@ -17,9 +17,11 @@ class CategoryService {
     await categoriesRef.doc(id).update({'isDeleted': true});
   }
 
-  Stream<List<CategoryModel>> getCategories() {
+  Stream<List<CategoryModel>> getCategories(String userId) {
     return categoriesRef
         .where('isDeleted', isEqualTo: false)
+        .where('idUser', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs

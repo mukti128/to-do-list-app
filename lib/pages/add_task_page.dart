@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:to_do_list/model/task_model.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_list/controller/task_controller.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -18,55 +19,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
   DateTime? dueDate;
   TimeOfDay? reminderTime;
 
-  bool _isSaving = false;
-
-  Future<void> _saveTask() async {
-    if (_isSaving) return;
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isSaving = true);
-
-    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  DateTime? _buildReminderDateTime() {
+    if (reminderTime == null) return null;
     final now = DateTime.now();
-
-    DateTime? reminderDateTime;
-    if (reminderTime != null) {
-      reminderDateTime = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        reminderTime!.hour,
-        reminderTime!.minute,
-      );
-    }
-
-    final task = TaskModel(
-      id: "",
-      title: _titleController.text,
-      createdAt: now,
-      dueDate: dueDate,
-      reminderTime: reminderDateTime,
-      categoryId: selectedCategoryId,
-      isPinned: false,
-      isDone: false,
-      isDeleted: false,
-      idUser: currentUserId,
+    return DateTime(
+      now.year,
+      now.month,
+      now.day,
+      reminderTime!.hour,
+      reminderTime!.minute,
     );
-
-    try {
-      await FirebaseFirestore.instance.collection('tasks').add(task.toMap());
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Task berhasil ditambahkan')),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal menambahkan task: $e')));
-    }
   }
 
   Future<void> _pickDueDate() async {
@@ -94,6 +56,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<TaskController>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Tambah Task')),
       body: Padding(
@@ -104,6 +68,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Judul task
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
@@ -115,6 +80,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
                 const SizedBox(height: 16),
 
+                // Dropdown kategori
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('categories')
@@ -131,7 +97,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
                     final categories = snapshot.data?.docs ?? [];
                     return DropdownButtonFormField<String?>(
-                      initialValue: selectedCategoryId,
+                      value: selectedCategoryId,
                       decoration: const InputDecoration(
                         labelText: "Kategori (Opsional)",
                         border: OutlineInputBorder(),
@@ -190,12 +156,39 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
                 const SizedBox(height: 24),
 
+                // Tombol Simpan
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _isSaving ? null : _saveTask,
+                    onPressed: controller.isSaving
+                        ? null
+                        : () async {
+                            if (!_formKey.currentState!.validate()) return;
+
+                            bool success = await controller.addTask(
+                              title: _titleController.text,
+                              dueDate: dueDate,
+                              reminderTime: _buildReminderDateTime(),
+                              categoryId: selectedCategoryId,
+                            );
+
+                            if (success && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Task berhasil ditambahkan")),
+                              );
+                              Navigator.pop(context);
+                            } else if (controller.errorMessage != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(controller.errorMessage!),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
                     icon: const Icon(Icons.save),
-                    label: _isSaving
+                    label: controller.isSaving
                         ? const SizedBox(
                             height: 16,
                             width: 16,
