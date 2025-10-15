@@ -60,9 +60,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            controller.deleteCategory(category.id);
-                          },
+                          color: Colors.redAccent,
+                          onPressed: () => _showDeleteConfirmation(context, category),
                         ),
                       ),
                     );
@@ -116,6 +115,44 @@ class _CategoriesPageState extends State<CategoriesPage> {
             },
             child: const Text("Simpan"),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, CategoryModel category) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Hapus Kategori"),
+        content: Text(
+          "Apakah kamu yakin ingin menghapus kategori '${category.name}'?\n\n"
+          "Semua task di dalam kategori ini akan kehilangan kategorinya (tidak dihapus).",
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(  
+              backgroundColor: Colors.redAccent,
+            ),
+            icon: const Icon(Icons.delete_forever, size: 18),
+            label: const Text("Hapus"),
+            onPressed: () async {
+              final userId = FirebaseAuth.instance.currentUser!.uid;
+              await controller.deleteCategory(category.id, userId);
+
+              if (mounted) Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Kategori '${category.name}' berhasil dihapus"),
+                ),
+              );
+            },
+          )
         ],
       ),
     );
