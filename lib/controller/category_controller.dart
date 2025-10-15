@@ -13,22 +13,27 @@ class CategoryController extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    _service.getCategories(userId).listen((data) {
-      categories = data;
-      isLoading = false;
-      notifyListeners();
-    }, onError: (e) {
-      errorMessage = e.toString();
-      isLoading = false;
-      notifyListeners();
-    });
+    _service
+        .getCategories(userId)
+        .listen(
+          (data) {
+            categories = data;
+            isLoading = false;
+            notifyListeners();
+          },
+          onError: (e) {
+            errorMessage = e.toString();
+            isLoading = false;
+            notifyListeners();
+          },
+        );
   }
 
   Future<void> addCategory(CategoryModel category) async {
     await _service.addCategory(category);
   }
 
-  Future<void> deleteCategory(String id) async {
-    await _service.softDeleteCategory(id);
+  Future<void> deleteCategory(String id, String userId) async {
+    await _service.softDeleteCategory(id, userId);
   }
 }

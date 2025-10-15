@@ -97,7 +97,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
                     final categories = snapshot.data?.docs ?? [];
                     return DropdownButtonFormField<String?>(
-                      value: selectedCategoryId,
+                      initialValue: selectedCategoryId,
                       decoration: const InputDecoration(
                         labelText: "Kategori (Opsional)",
                         border: OutlineInputBorder(),
