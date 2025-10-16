@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list/controller/category_controller.dart';
+import 'package:to_do_list/controller/profile_controller.dart';
 import 'package:to_do_list/controller/task_controller.dart';
 import 'package:to_do_list/firebase_options.dart';
+import 'package:to_do_list/pages/contents/profile_page.dart';
 import 'package:to_do_list/pages/login_page.dart';
 import 'package:to_do_list/theme.dart';
 
@@ -14,6 +16,7 @@ void main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => TaskController()),
       ChangeNotifierProvider(create: (_) => CategoryController()), 
+      ChangeNotifierProvider(create: (_) => ProfileController()),
     ],
     child: const MyApp(),
   ),
@@ -45,6 +48,10 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const LoginPage(),
+      routes: {
+        '/profile': (context) => const ProfilePage(),
+        '/login': (context) => const LoginPage(),
+      },
     );
   }
 }
