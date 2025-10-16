@@ -12,13 +12,13 @@ class AuthController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   User? get currentUser => _authService.currentUser;
 
-  void _setLoading(bool value) {
-    _isLoading = value;
+  void _setLoading(bool v) {
+    _isLoading = v;
     notifyListeners();
   }
 
-  void _cleanError() {
-    _errorMessage = null;
+  void _setError(String? msg) {
+    _errorMessage = msg;
     notifyListeners();
   }
 
@@ -26,48 +26,59 @@ class AuthController extends ChangeNotifier {
     required String fullName,
     required String email,
     required String password,
+    String? userImageUrl,
   }) async {
     _setLoading(true);
-    _cleanError();
+    _setError(null);
 
-    String? result = await _authService.register(
+    final String? res = await _authService.register(
       fullName: fullName,
       email: email,
       password: password,
+      userImageUrl: userImageUrl,
     );
 
     _setLoading(false);
 
-    if (result != null) {
-      _errorMessage = result;
-      notifyListeners();
+    if (res != null) {
+      _setError(res);
       return false;
     }
 
     return true;
   }
 
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     _setLoading(true);
-    _cleanError();
+    _setError(null);
 
-    String? result = await _authService.login(
+    final String? res = await _authService.login(
       email: email,
       password: password,
     );
 
     _setLoading(false);
 
-    if (result != null) {
-      _errorMessage = result;
-      notifyListeners();
+    if (res != null) {
+      _setError(res);
       return false;
     }
 
     return true;
+  }
+
+  Future<String?> softDeleteUser(String targetUid) async {
+    _setLoading(true);
+    _setError(null);
+
+    final res = await _authService.softDeleteUser(targetUid);
+    _setLoading(false);
+
+    if (res != null) {
+      _setError(res);
+    }
+
+    return res;
   }
 
   Future<void> logout() async {
