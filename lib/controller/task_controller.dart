@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:to_do_list/model/task_model.dart';
+import 'package:to_do_list/models/task_model.dart';
 import 'package:to_do_list/services/task_service.dart';
 
 class TaskController extends ChangeNotifier {
@@ -50,8 +50,8 @@ class TaskController extends ChangeNotifier {
 
   Future<bool> addTask({
     required String title,
-    DateTime? dueDate,
-    DateTime? reminderTime,
+    required DateTime dueDate,
+    required DateTime reminderTime,
     String? categoryId,
   }) async {
     _setSaving(true);

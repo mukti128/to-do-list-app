@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:to_do_list/controller/task_controller.dart';
 import 'package:to_do_list/controller/category_controller.dart';
-import 'package:to_do_list/model/task_model.dart';
-import 'package:to_do_list/model/category_model.dart';
+import 'package:to_do_list/models/task_model.dart';
+import 'package:to_do_list/models/category_model.dart';
 import 'package:to_do_list/pages/feature/add_task_page.dart';
 import 'package:to_do_list/pages/feature/categoies_page.dart';
 

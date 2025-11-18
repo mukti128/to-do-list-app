@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:to_do_list/model/category_model.dart';
+import 'package:to_do_list/models/category_model.dart';
 import 'package:to_do_list/services/category_service.dart';
 
 class CategoryController extends ChangeNotifier {

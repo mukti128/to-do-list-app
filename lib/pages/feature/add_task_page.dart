@@ -19,6 +19,19 @@ class _AddTaskPageState extends State<AddTaskPage> {
   DateTime? dueDate;
   TimeOfDay? reminderTime;
 
+  @override
+  void initState() {
+    super.initState();
+
+    final now = DateTime.now();
+    final tenMinutesLater = now.add(const Duration(minutes: 10));
+
+    setState(() {
+      dueDate = DateTime(now.year, now.month, now.day);
+      reminderTime = TimeOfDay(hour: tenMinutesLater.hour, minute: tenMinutesLater.minute);
+    });
+  }
+
   DateTime? _buildReminderDateTime() {
     if (reminderTime == null) return null;
     final now = DateTime.now();
@@ -92,6 +105,27 @@ class _AddTaskPageState extends State<AddTaskPage> {
                               ? "Wajib diisi"
                               : null,
                         ),
+
+                        const SizedBox(height: 20),
+
+                        _buildPickerButton(
+                          title: "Tenggat",
+                          value: dueDate == null
+                              ? "Belum pilih"
+                              : "${dueDate!.day}/${dueDate!.month}/${dueDate!.year}",
+                          onTap: _pickDueDate,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        _buildPickerButton(
+                          title: "Waktu",
+                          value: reminderTime == null
+                              ? "Belum pilih"
+                              : reminderTime!.format(context),
+                          onTap: _pickReminder,
+                        ),
+
                         const SizedBox(height: 20),
 
                         StreamBuilder<QuerySnapshot>(
@@ -105,8 +139,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
                               )
                               .snapshots(),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
                             }
 
                             final categories = snapshot.data?.docs ?? [];
@@ -125,30 +162,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                   );
                                 }),
                               ],
-                              onChanged: (value) => 
+                              onChanged: (value) =>
                                   setState(() => selectedCategoryId = value),
                             );
                           },
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        _buildPickerButton(
-                          title: "Tenggat",
-                          value: dueDate == null
-                              ? "Belum pilih"
-                              : "${dueDate!.day}/${dueDate!.month}/${dueDate!.year}",
-                          onTap: _pickDueDate,
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        _buildPickerButton(
-                          title: "Pengingat",
-                          value: reminderTime == null
-                              ? "Belum pilih"
-                              : reminderTime!.format(context),
-                          onTap: _pickReminder,
                         ),
                       ],
                     ),
@@ -163,43 +180,60 @@ class _AddTaskPageState extends State<AddTaskPage> {
       ),
 
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20).copyWith(bottom: 20),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+        ).copyWith(bottom: 20),
         child: SizedBox(
           height: 55,
           child: ElevatedButton.icon(
             onPressed: controller.isSaving
                 ? null
                 : () async {
-                  if (!_formKey.currentState!.validate()) return;
+                    if (!_formKey.currentState!.validate()) return;
 
-                  bool success = await controller.addTask(
-                    title: _titleController.text,
-                    dueDate: dueDate,
-                    reminderTime: _buildReminderDateTime(),
-                    categoryId: selectedCategoryId,
-                  );
+                    if (dueDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Tenggat wajib diisi")),
+                      );
+                      return;
+                    }
 
-                  if (success && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Task berhasil ditambahkan"),
-                      ),
+                    if (reminderTime == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Waktu pengingat wajib diisi")),
+                      );
+                      return;
+                    }
+
+                    bool success = await controller.addTask(
+                      title: _titleController.text,
+                      dueDate: dueDate!,
+                      reminderTime: _buildReminderDateTime()!,
+                      categoryId: selectedCategoryId,
                     );
-                  } else if (controller.errorMessage != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(controller.errorMessage!),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
+
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Task berhasil ditambahkan"),
+                        ),
+                      );
+                      Navigator.pop(context);
+                    } else if (controller.errorMessage != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(controller.errorMessage!),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
             icon: controller.isSaving
                 ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.save),
             label: const Text(
               "Simpan Task",
@@ -227,14 +261,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
       controller: controller,
       validator: validator,
       decoration: InputDecoration(
-        labelText: label,
+        label: requiredLabel(label),
         border: UnderlineInputBorder(),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.grey, width: 1),
         ),
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.blueAccent, width: 2),
-        )
+        ),
       ),
     );
   }
@@ -271,11 +305,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Colors.grey, width: 1),
-          ),
+          border: Border(bottom: BorderSide(color: Colors.grey, width: 1)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -283,20 +315,33 @@ class _AddTaskPageState extends State<AddTaskPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                requiredLabel(title),
+
                 const SizedBox(height: 4),
+
                 Text(value, style: TextStyle(color: Colors.grey.shade700)),
               ],
             ),
             const Icon(Icons.calendar_month, size: 22),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget requiredLabel(String text) {
+    return RichText(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          color: Colors.black,
+        ),
+        children: const [
+          TextSpan(
+            text: ' *',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
