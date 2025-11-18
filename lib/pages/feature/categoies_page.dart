@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:to_do_list/controller/category_controller.dart';
-import 'package:to_do_list/model/category_model.dart';
+import 'package:to_do_list/models/category_model.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});

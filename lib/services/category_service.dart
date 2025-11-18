@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:to_do_list/model/category_model.dart';
+import 'package:to_do_list/models/category_model.dart';
 
 class CategoryService {
   final CollectionReference categoriesRef = FirebaseFirestore.instance
